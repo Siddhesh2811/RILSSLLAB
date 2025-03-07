@@ -1,0 +1,10 @@
+.container{
+    margin-top: 20px;
+    /* background-color:grey; */
+    height: 100px;
+}
+
+.formTitle{
+    font-size: 18px;
+    font-weight: bold;
+}
