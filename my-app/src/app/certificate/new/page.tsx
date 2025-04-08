@@ -61,19 +61,51 @@ export default function MyForm() {
 
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true); // start loader
+  
     try {
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      const response = await fetch("/api/generate-csr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fqdn: values.fqdn }),
+      });
+  
+      console.log("Response:", response);
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Something went wrong");
+      }
+  
+      const result = await response.json();
+      console.log("API Result:", result);
+  
+      // 🎉 Show download toast
+      toast.success("CSR and Key generated successfully!", {
+        description: "Click below to download the ZIP file.",
+        action: {
+          label: "Download",
+          onClick: () => {
+            const a = document.createElement("a");
+            a.href = result.zip;
+            a.download = `${values.fqdn}.zip`;
+            a.click();
+          },
+        },
+      });
     } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+      console.error("Form submission error:", error);
+      toast.error("Failed to generate CSR. Please try again.");
+    } finally {
+      setIsLoading(false); // stop loader
     }
   }
+  
+  
+  
 
   return (
     <div className={styles.container}>
@@ -226,7 +258,36 @@ export default function MyForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit" disabled={isLoading}>
+  {isLoading ? (
+    <>
+      <svg
+        className="animate-spin mr-2 h-4 w-4 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v8H4z"
+        />
+      </svg>
+      Generating...
+    </>
+  ) : (
+    "Submit"
+  )}
+</Button>
+
       </form>
     </Form></Card></div></div></div>
   )
