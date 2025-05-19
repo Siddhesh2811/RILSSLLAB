@@ -80,6 +80,26 @@ const page = () => {
         </div>
       </div>
 
+      <div className={styles.certType}>
+        <div className={styles.card}>
+          <Card>
+            <div className={styles.cardContent}>
+              <CardHeader>
+                <CardTitle>PFX Generator</CardTitle>
+                <CardDescription>Generate a PFX file from your CRT file</CardDescription>
+              </CardHeader>
+            </div>
+            <CardFooter>
+              <div className={styles.createButton}>
+                <Button asChild>
+                  <Link href="/certificate/pfxgen">Create</Link>
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+
       <div className={styles.certTable}>
         <div className={styles.tableTitle}>
           <div className={styles.recentIcon}>
