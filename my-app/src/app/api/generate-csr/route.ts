@@ -11,7 +11,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { fqdn, san = [] } = body;
-    const sans = Array.isArray(san) ? san : [];
+
+    console.log("Received body from frontend:", body);
 
     if (!fqdn) {
       return NextResponse.json({ error: "Missing FQDN" }, { status: 400 });
@@ -24,62 +25,54 @@ export async function POST(req: Request) {
       mkdirSync(fqdnDir, { recursive: true });
     }
 
-    const templateConfigPath = path.resolve(process.cwd(), "public/certs/template/openssl-san.cnf");
-    const tempConfigPath = path.join(fqdnDir, "openssl-temp.cnf");
+    const templateConfigPath = path.resolve(process.cwd(), "public/certs/template/openssl.cnf");
+    const templateSANConfigPath = path.resolve(process.cwd(), "public/certs/template/openssl-san.cnf");
 
-    // Read template config
-    let configContent = readFileSync(templateConfigPath, "utf-8");
+    let configToUse = templateConfigPath;
 
-    // Remove any existing [ alt_names ] section
-    configContent = configContent.replace(/\[ alt_names \][\s\S]*?(?=\n\[|$)/g, "");
+    // If SANs are provided, dynamically create a temp config file
+    if (Array.isArray(san) && san.length > 0) {
+      let configContent = readFileSync(templateSANConfigPath, "utf-8");
 
-    // Prepare SAN entries
-    let sanConfig = "";
-    if (sans.length > 0) {
-      sanConfig = sans.map((domain, i) => `DNS.${i + 1} = ${domain}`).join("\n");
-    } else {
-      sanConfig = `DNS.1 = ${fqdn}`;
-    }
+      // Remove any existing [ alt_names ] section
+      configContent = configContent.replace(/\[ alt_names \][\s\S]*?(?=\n\[|$)/, "");
 
-    // Append SAN section
-    configContent += `
+      const sanConfig = san.map((dns, i) => `DNS.${i + 1} = ${dns}`).join("\n");
+
+      configContent += `
 
 [ alt_names ]
 ${sanConfig}
 `;
 
-    // Write temp config file
-    writeFileSync(tempConfigPath, configContent, "utf-8");
+      const tempConfigPath = path.join(fqdnDir, "openssl-temp.cnf");
+      writeFileSync(tempConfigPath, configContent, "utf-8");
+      configToUse = tempConfigPath;
+    }
 
-    // Filenames for CSR and keys
     const csrFile = `${fqdn}.csr`;
     const keyFile = `${fqdn}.key`;
     const tempKeyFile = `privkey.pem`;
 
-    // Subject
     const subj = `/C=IN/ST=Maharashtra/L=Navi-Mumbai/O=RIL/OU=SAP BASIS/CN=${fqdn}`;
 
-    // Generate CSR and private key
     await execShell(
-      `openssl req -config "${tempConfigPath}" -newkey rsa:2048 -sha256 -nodes -keyout "${tempKeyFile}" -new -out "${csrFile}" -subj "${subj}"`,
+      `openssl req -config "${configToUse}" -newkey rsa:2048 -sha256 -nodes -keyout "${tempKeyFile}" -new -out "${csrFile}" -subj "${subj}"`,
       { cwd: fqdnDir }
     );
 
-    // Extract unencrypted private key
     await execShell(`openssl rsa -in "${tempKeyFile}" -out "${keyFile}"`, {
       cwd: fqdnDir,
     });
 
-    // Zip everything
     const zipFilePath = path.join(certsBase, `${fqdn}.zip`);
     await zipDirectory(fqdnDir, zipFilePath);
 
-    // Read and return CSR
     const csr = readFileSync(path.join(fqdnDir, csrFile), "utf-8");
 
     return NextResponse.json({
       csr,
-      zip: `/certs/${fqdn}.zip`,
+      zip: `/certs/${fqdn}.zip`
     });
 
   } catch (err: any) {
@@ -95,7 +88,7 @@ async function zipDirectory(source: string, out: string) {
   return new Promise((resolve, reject) => {
     archive
       .directory(source, false)
-      .on("error", err => reject(err))
+      .on("error", (err) => reject(err))
       .pipe(stream);
 
     stream.on("close", () => resolve(true));
