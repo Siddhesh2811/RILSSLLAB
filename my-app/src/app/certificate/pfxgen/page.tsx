@@ -35,6 +35,14 @@ import {
   Paperclip
 } from "lucide-react"
 import { Label } from "@/components/ui/label"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 import styles from "@/app/certificate/pfxgen/page.module.css"
 
@@ -46,19 +54,19 @@ const formSchema = z.object({
 
 export default function MyForm() {
 
-  const [files, setFiles] = useState < File[] | null > (null);
+  const [files, setFiles] = useState<File[] | null>(null);
 
   const dropZoneConfig = {
     maxFiles: 5,
     maxSize: 1024 * 1024 * 4,
     multiple: true,
   };
-  const form = useForm < z.infer < typeof formSchema >> ({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
 
   })
 
-  function onSubmit(values: z.infer < typeof formSchema > ) {
+  function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       console.log(values);
       toast(
@@ -73,68 +81,80 @@ export default function MyForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10">
-        
-        <div className="grid grid-cols-12 gap-4">
-          
-          <div className="col-span-4">
-            
-        <FormField
-          control={form.control}
-          name="name_9140475896"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>FQDN</FormLabel>
-              <FormControl>
-                <Input 
-                placeholder="example.ril.com"
-                
-                type=""
-                {...field} />
-              </FormControl>
-              
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-          </div>
-          
+    <div className={styles.container}>
+      <div className={styles.formWrapper}>
+        <div className={styles.card}>
+          <Card>
+            <CardTitle className={styles.formTitle}>
+              PFX Generator
+            </CardTitle>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 max-w-3xl mx-auto py-10">
+
+                <div className="grid grid-cols-12 gap-4">
+
+                  <div className="col-span-6">
+
+                    <FormField
+                      control={form.control}
+                      name="name_9140475896"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>FQDN</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="example.ril.com"
+
+                              type=""
+                              {...field} />
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="name_6765001998"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passphrase</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder=""
+
+                          type="text"
+                          {...field} />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="crtfile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Upload your .crt file</FormLabel>
+                      <Input id="crt" type="file" />
+                      <FormDescription>Upload only .crt file</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit">Submit</Button>
+              </form>
+            </Form>
+          </Card>
         </div>
-        
-        <FormField
-          control={form.control}
-          name="name_6765001998"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Passphrase</FormLabel>
-              <FormControl>
-                <Input 
-                placeholder=""
-                
-                type="text"
-                {...field} />
-              </FormControl>
-              
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-            <FormField
-              control={form.control}
-              name="crtfile"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Upload your .crt file</FormLabel>
-                    <Input className={styles.clickInput} id="crt" type="file" />
-                  <FormDescription>Select a file to upload.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
+      </div>
+    </div>
   )
 }
