@@ -23,8 +23,8 @@ import styles from "@/app/certificate/pfxgen/page.module.css";
 import { getRandomValues } from "crypto";
 
 const formSchema = z.object({
-  name_9140475896: z.string().min(1, "FQDN is required"),
-  name_6765001998: z.string().min(1, "Passphrase is required"),
+  fqdn: z.string().min(1, "FQDN is required"),
+  passphrase: z.string().min(1, "Passphrase is required"),
   crtfile: z
     .instanceof(FileList)
     .refine((files) => files.length === 1, "Please upload exactly one .crt file"),
@@ -41,8 +41,8 @@ export default function MyForm() {
     setIsLoading(true);
     try {
       const formData = new FormData();
-      formData.append("name_9140475896", data.name_9140475896);
-      formData.append("name_6765001998", data.name_6765001998);
+      formData.append("fqdn", data.fqdn);
+      formData.append("passphrase", data.passphrase);
       formData.append("crtfile", data.crtfile[0]); // single file
 
       const res = await fetch("/api/pfx-generator", {
@@ -64,7 +64,7 @@ export default function MyForm() {
               a.href = result.downloadUrl;  // your original download URL
               a.target = "_blank";
               a.rel = "noopener noreferrer";
-              a.download = `${data.name_9140475896}.pfx`; // adjust filename as needed
+              a.download = `${data.fqdn}.pfx`; // adjust filename as needed
               a.click();
             },
           },
@@ -97,7 +97,7 @@ export default function MyForm() {
               >
                 <FormField
                   control={form.control}
-                  name="name_9140475896"
+                  name="fqdn"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>FQDN</FormLabel>
@@ -111,7 +111,7 @@ export default function MyForm() {
 
                 <FormField
                   control={form.control}
-                  name="name_6765001998"
+                  name="passphrase"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passphrase</FormLabel>
@@ -136,7 +136,7 @@ export default function MyForm() {
                           onChange={(e) => field.onChange(e.target.files)}
                         />
                       </FormControl>
-                      <FormDescription>Upload only one .crt file</FormDescription>
+                      <FormDescription>Upload your .crt file</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
