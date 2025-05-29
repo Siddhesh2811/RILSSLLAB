@@ -1,0 +1,23 @@
+.container{
+    margin-top: 20px;
+    height: 100px;
+}
+
+.formWrapper{
+    width: 40%;
+    
+}
+.card{
+    width: auto;
+}
+.formTitle{
+    margin-left: 40px;
+    margin-top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.formContent{
+    margin-top: 20px;
+    background-color: blue;
+}
