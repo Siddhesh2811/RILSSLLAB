@@ -13,8 +13,8 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
 
-    const fqdn = formData.get("name_9140475896")?.toString();
-    const passphrase = formData.get("name_6765001998")?.toString();
+    const fqdn = formData.get("fqdn")?.toString();
+    const passphrase = formData.get("passphrase")?.toString();
     const crtFile = formData.get("crtfile") as File | null;
 
     if (!fqdn || !passphrase || !crtFile) {
