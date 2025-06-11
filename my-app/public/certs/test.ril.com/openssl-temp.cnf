@@ -15,7 +15,8 @@ CN = dummy.example.com
 [ v3_req ]
 subjectAltName = @alt_names
 
-
-
 [ alt_names ]
 DNS.1 = abc.com
+DNS.2 = xyz.com
+DNS.3 = test1.com
+DNS.4 = test2.com
